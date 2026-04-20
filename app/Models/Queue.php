@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 
-#[Fillable(['user_id', 'schedule_id', 'nomor_antrian', 'keluhan', 'status'])]
+#[Fillable(['user_id', 'schedule_id', 'service_id', 'nomor_antrian', 'keluhan', 'status'])]
 class Queue extends Model
 {
     /** @use HasFactory<\Database\Factories\QueueFactory> */
@@ -18,6 +18,14 @@ class Queue extends Model
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the service for the queue.
+     */
+    public function service(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Service::class);
     }
 
     /**
