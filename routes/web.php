@@ -19,6 +19,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Queue Calling Routes (Petugas)
+    Route::get('/petugas/antrian', [\App\Http\Controllers\QueueController::class, 'petugasIndex'])->name('petugas.antrian');
+    Route::post('/petugas/antrian/{queue}/panggil', [\App\Http\Controllers\QueueController::class, 'panggil'])->name('petugas.panggil');
 });
+
+// TV Display (Public)
+Route::get('/tv', [\App\Http\Controllers\QueueController::class, 'tvIndex'])->name('tv.index');
 
 require __DIR__.'/auth.php';
