@@ -23,6 +23,10 @@ Route::middleware('auth')->group(function () {
     // Queue Calling Routes (Petugas)
     Route::get('/petugas/antrian', [\App\Http\Controllers\QueueController::class, 'petugasIndex'])->name('petugas.antrian');
     Route::post('/petugas/antrian/{queue}/panggil', [\App\Http\Controllers\QueueController::class, 'panggil'])->name('petugas.panggil');
+
+    // Admin Reports
+    Route::get('/admin/rekap', [\App\Http\Controllers\AdminController::class, 'rekapIndex'])->name('admin.rekap');
+    Route::get('/admin/rekap/data', [\App\Http\Controllers\AdminController::class, 'getData'])->name('admin.rekap.data');
 });
 
 // TV Display (Public)
