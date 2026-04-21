@@ -13,6 +13,15 @@ class Queue extends Model
     use HasFactory;
 
     /**
+     * Queue Statuses
+     */
+    public const STATUS_WAITING = 'waiting';
+    public const STATUS_CALLED = 'called';
+    public const STATUS_PROCESSING = 'processing';
+    public const STATUS_DONE = 'done';
+    public const STATUS_SKIPPED = 'skipped';
+
+    /**
      * Get the user that owns the queue.
      */
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
