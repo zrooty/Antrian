@@ -1,0 +1,50 @@
+<x-admin-layout>
+    <x-slot name="header">
+        {{ __('Tambah User Baru') }}
+    </x-slot>
+
+    <div class="max-w-2xl bg-white dark:bg-gray-800 shadow-sm sm:rounded-2xl border border-gray-100 dark:border-gray-700 p-8">
+        <form action="{{ route('admin.users.store') }}" method="POST">
+            @csrf
+            
+            <div class="mb-6">
+                <x-input-label for="name" value="Nama Lengkap" />
+                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name')" required autofocus />
+                <x-input-error class="mt-2" :messages="$errors->get('name')" />
+            </div>
+
+            <div class="mb-6">
+                <x-input-label for="email" value="Email" />
+                <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email')" required />
+                <x-input-error class="mt-2" :messages="$errors->get('email')" />
+            </div>
+
+            <div class="mb-6">
+                <x-input-label for="role" value="Role Akses" />
+                <select id="role" name="role" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                    <option value="pasien" {{ old('role') === 'pasien' ? 'selected' : '' }}>Pasien</option>
+                    <option value="petugas" {{ old('role') === 'petugas' ? 'selected' : '' }}>Petugas</option>
+                    <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                </select>
+                <x-input-error class="mt-2" :messages="$errors->get('role')" />
+            </div>
+
+            <div class="mb-6">
+                <x-input-label for="password" value="Password" />
+                <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" required />
+                <x-input-error class="mt-2" :messages="$errors->get('password')" />
+            </div>
+
+            <div class="mb-6">
+                <x-input-label for="password_confirmation" value="Konfirmasi Password" />
+                <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" required />
+                <x-input-error class="mt-2" :messages="$errors->get('password_confirmation')" />
+            </div>
+
+            <div class="flex items-center gap-4">
+                <x-primary-button>{{ __('Simpan User') }}</x-primary-button>
+                <a href="{{ route('admin.users.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:underline">Batal</a>
+            </div>
+        </form>
+    </div>
+</x-admin-layout>
