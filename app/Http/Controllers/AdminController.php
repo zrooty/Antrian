@@ -19,9 +19,9 @@ class AdminController extends Controller
         // Simple stats for dashboard
         $stats = [
             'total_antrian' => Queue::whereDate('created_at', Carbon::today())->count(),
-            'selesai' => Queue::whereDate('created_at', Carbon::today())->where('status', 'selesai')->count(),
-            'menunggu' => Queue::whereDate('created_at', Carbon::today())->where('status', 'menunggu')->count(),
-            'batal' => Queue::whereDate('created_at', Carbon::today())->where('status', 'batal')->count(),
+            'selesai' => Queue::whereDate('created_at', Carbon::today())->where('status', Queue::STATUS_DONE)->count(),
+            'menunggu' => Queue::whereDate('created_at', Carbon::today())->where('status', Queue::STATUS_WAITING)->count(),
+            'batal' => Queue::whereDate('created_at', Carbon::today())->where('status', Queue::STATUS_SKIPPED)->count(),
         ];
         
         return view('admin.rekap', compact('stats'));
@@ -94,6 +94,7 @@ class AdminController extends Controller
             ->leftJoin('users', 'queues.user_id', '=', 'users.id')
             ->leftJoin('services', 'queues.service_id', '=', 'services.id')
             ->leftJoin('schedules', 'queues.schedule_id', '=', 'schedules.id')
+            ->whereDate('queues.created_at', Carbon::today())
             ->select([
                 'queues.id',
                 'users.name as nama_pasien',
@@ -117,10 +118,10 @@ class AdminController extends Controller
             })
             ->editColumn('status', function($row) {
                 $color = match($row->status) {
-                    'menunggu' => 'yellow',
-                    'dipanggil' => 'blue',
-                    'selesai' => 'green',
-                    'batal' => 'red',
+                    Queue::STATUS_WAITING => 'yellow',
+                    Queue::STATUS_CALLED, Queue::STATUS_PROCESSING => 'blue',
+                    Queue::STATUS_DONE => 'green',
+                    Queue::STATUS_SKIPPED => 'red',
                     default => 'gray'
                 };
                 return '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-'.$color.'-100 text-'.$color.'-800">'.ucfirst($row->status).'</span>';
