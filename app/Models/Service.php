@@ -10,5 +10,5 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 class Service extends Model
 {
     /** @use HasFactory<\Database\Factories\ServiceFactory> */
-    use HasFactory;
+    use HasFactory, \App\Traits\LoggedActivity;
 }
