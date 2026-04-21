@@ -9,6 +9,12 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
+    $role = auth()->user()->role;
+    if ($role === 'admin') {
+        return redirect()->route('admin.rekap');
+    } elseif ($role === 'petugas') {
+        return redirect()->route('petugas.antrian');
+    }
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
