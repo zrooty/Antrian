@@ -3,6 +3,55 @@
         {{ __('Laporan & Analisis') }}
     </x-slot>
 
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    
+    <style>
+        /* Dark mode overrides for DataTables controls */
+        .dark .dataTables_wrapper .dataTables_length select,
+        .dark .dataTables_wrapper .dataTables_filter input {
+            background-color: #374151; /* gray-700 */
+            color: #f3f4f6; /* gray-100 */
+            border: 1px solid #4b5563; /* gray-600 */
+            border-radius: 0.5rem;
+            padding: 0.375rem 0.75rem;
+        }
+        .dark .dataTables_wrapper .dataTables_length label,
+        .dark .dataTables_wrapper .dataTables_filter label,
+        .dark .dataTables_wrapper .dataTables_info,
+        .dark .dataTables_wrapper .dataTables_paginate {
+            color: #d1d5db; /* gray-300 */
+        }
+        .dark .dataTables_wrapper .dataTables_paginate .paginate_button {
+            color: #d1d5db !important; /* gray-300 */
+            border: 1px solid #4b5563 !important; /* gray-600 */
+            background: #374151 !important; /* gray-700 */
+            border-radius: 0.375rem;
+        }
+        .dark .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #4f46e5 !important; /* indigo-600 */
+            color: #ffffff !important;
+            border-color: #4f46e5 !important;
+        }
+        .dark .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #4b5563 !important; /* gray-600 */
+            color: #ffffff !important;
+            border-color: #4b5563 !important;
+        }
+        .dark table.dataTable thead th {
+            border-bottom-color: #4b5563; /* gray-600 */
+        }
+        .dark table.dataTable tbody tr {
+            background-color: transparent;
+        }
+        .dark table.dataTable tbody td {
+            border-bottom-color: #374151; /* gray-700 */
+        }
+        .dark table.dataTable.stripe tbody tr.odd {
+            background-color: rgba(55, 65, 81, 0.5); /* gray-700 semi-transparent */
+        }
+    </style>
+
     <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm mb-6">
         <form id="filter-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div>
@@ -20,7 +69,7 @@
     </div>
 
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-2xl border border-gray-100 dark:border-gray-700">
-        <div class="p-8">
+        <div class="p-8 text-gray-900 dark:text-gray-100">
             <div class="overflow-x-auto">
                 <table id="reportTable" class="display responsive nowrap w-full text-sm">
                     <thead>
@@ -66,6 +115,10 @@
                     search: "Cari:",
                     lengthMenu: "Tampilkan _MENU_ data",
                     info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    paginate: {
+                        next: "→",
+                        previous: "←"
+                    }
                 }
             });
 
