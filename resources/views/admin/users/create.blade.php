@@ -21,13 +21,38 @@
 
             <div class="mb-6">
                 <x-input-label for="role" value="Role Akses" />
-                <select id="role" name="role" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                <select id="role" name="role" onchange="toggleCounter()" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
                     <option value="pasien" {{ old('role') === 'pasien' ? 'selected' : '' }}>Pasien</option>
                     <option value="petugas" {{ old('role') === 'petugas' ? 'selected' : '' }}>Petugas</option>
                     <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
                 </select>
                 <x-input-error class="mt-2" :messages="$errors->get('role')" />
             </div>
+
+            <div id="counter_selection" class="mb-6 {{ old('role') === 'petugas' ? '' : 'hidden' }}">
+                <x-input-label for="counter_id" value="Tugaskan ke Loket" />
+                <select id="counter_id" name="counter_id" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                    <option value="">-- Pilih Loket --</option>
+                    @foreach($counters as $counter)
+                        <option value="{{ $counter->id }}" {{ old('counter_id') == $counter->id ? 'selected' : '' }}>
+                            {{ $counter->name }} ({{ $counter->code }})
+                        </option>
+                    @endforeach
+                </select>
+                <x-input-error class="mt-2" :messages="$errors->get('counter_id')" />
+            </div>
+
+            <script>
+                function toggleCounter() {
+                    const role = document.getElementById('role').value;
+                    const selection = document.getElementById('counter_selection');
+                    if (role === 'petugas') {
+                        selection.classList.remove('hidden');
+                    } else {
+                        selection.classList.add('hidden');
+                    }
+                }
+            </script>
 
             <div class="mb-6">
                 <x-input-label for="password" value="Password" />

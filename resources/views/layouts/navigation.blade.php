@@ -17,7 +17,7 @@
                             {{ __('Dashboard Admin') }}
                         </x-nav-link>
                     @elseif(Auth::user()->role === 'petugas')
-                        <x-nav-link :href="route('petugas.antrian')" :active="request()->routeIs('petugas.antrian')">
+                        <x-nav-link :href="route('petugas.index')" :active="request()->routeIs('petugas.index')">
                             {{ __('Dashboard Petugas') }}
                         </x-nav-link>
                     @else
@@ -88,7 +88,7 @@
                     {{ __('Dashboard Admin') }}
                 </x-responsive-nav-link>
             @elseif(Auth::user()->role === 'petugas')
-                <x-responsive-nav-link :href="route('petugas.antrian')" :active="request()->routeIs('petugas.antrian')">
+                <x-responsive-nav-link :href="route('petugas.index')" :active="request()->routeIs('petugas.index')">
                     {{ __('Dashboard Petugas') }}
                 </x-responsive-nav-link>
             @else

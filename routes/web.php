@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\QueueController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -14,7 +15,7 @@ Route::get('/dashboard', function () {
     if ($role === 'admin') {
         return redirect()->route('admin.rekap');
     } elseif ($role === 'petugas') {
-        return redirect()->route('petugas.antrian');
+        return redirect()->route('petugas.index');
     }
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -27,9 +28,15 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Queue Calling Routes (Petugas)
-    Route::get('/petugas/antrian', [\App\Http\Controllers\QueueController::class, 'petugasIndex'])->name('petugas.antrian');
-    Route::post('/petugas/antrian/{queue}/panggil', [\App\Http\Controllers\QueueController::class, 'panggil'])->name('petugas.panggil');
+    // Petugas (Officer) Logic
+    Route::prefix('officer')->name('petugas.')->group(function () {
+        Route::get('/', [QueueController::class, 'petugasIndex'])->name('index');
+        Route::post('/call', [QueueController::class, 'panggil'])->name('panggil');
+        Route::patch('/queue/{queue}/start', [QueueController::class, 'startProcessing'])->name('start');
+        Route::patch('/queue/{queue}/finish', [QueueController::class, 'finishQueue'])->name('finish');
+        Route::patch('/queue/{queue}/skip', [QueueController::class, 'skipQueue'])->name('skip');
+        Route::patch('/queue/{queue}/recall', [QueueController::class, 'recallQueue'])->name('recall');
+    });
 });
 
     // Admin Dashboard (Pusat Kontrol)
