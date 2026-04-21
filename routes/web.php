@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/operational/reset', [AdminController::class, 'resetQueue'])->name('operational.reset');
         
         // Laporan & Analisis
+        Route::get('/dashboard/data', [AdminController::class, 'getData'])->name('rekap.data');
         Route::get('/reports', [AdminController::class, 'reportIndex'])->name('reports');
         Route::get('/reports/data', [AdminController::class, 'getReportData'])->name('reports.data');
         
