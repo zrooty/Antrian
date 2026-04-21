@@ -58,7 +58,7 @@ class ReservationController extends Controller
         // 4c. Cegah Daftar Ganda
         $existingQueue = Queue::where('user_id', Auth::id())
             ->where('schedule_id', $schedule->id)
-            ->where('status', 'menunggu')
+            ->where('status', Queue::STATUS_WAITING)
             ->exists();
 
         if ($existingQueue) {
@@ -81,7 +81,7 @@ class ReservationController extends Controller
             'service_id' => $service->id,
             'nomor_antrian' => $nomor_antrian,
             'keluhan' => $request->keluhan,
-            'status' => 'menunggu',
+            'status' => Queue::STATUS_WAITING,
         ]);
 
         return redirect()->route('dashboard')->with('status', 'Reservasi berhasil! Nomor antrian Anda: ' . $nomor_antrian);
