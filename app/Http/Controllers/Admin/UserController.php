@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Counter;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -22,7 +23,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('admin.users.create');
+        $counters = Counter::where('status', 'active')->get();
+        return view('admin.users.create', compact('counters'));
     }
 
     /**
@@ -35,6 +37,7 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:pasien,petugas,admin',
+            'counter_id' => 'nullable|exists:counters,id',
         ]);
 
         $validated['password'] = bcrypt($validated['password']);
@@ -57,7 +60,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        $counters = Counter::where('status', 'active')->get();
+        return view('admin.users.edit', compact('user', 'counters'));
     }
 
     /**
@@ -69,6 +73,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'role' => 'required|in:pasien,petugas,admin',
+            'counter_id' => 'nullable|exists:counters,id',
         ]);
 
         if ($request->filled('password')) {

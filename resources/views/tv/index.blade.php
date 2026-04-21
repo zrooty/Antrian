@@ -138,7 +138,9 @@
                         nomorEl.style.opacity = '0';
                         setTimeout(() => {
                             nomorEl.innerText = e.nomor_antrian;
-                            loketEl.innerText = "Menuju LOKET " + e.loket;
+                            // Jika e.loket sudah mengandung kata 'Loket', gunakan apa adanya
+                            const displayLoket = e.loket.toLowerCase().includes('loket') ? e.loket : "Loket " + e.loket;
+                            loketEl.innerText = "Menuju " + displayLoket.toUpperCase();
                             nomorEl.style.opacity = '1';
                             
                             // Audio Panggilan
