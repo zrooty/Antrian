@@ -29,6 +29,7 @@ class QueueController extends Controller
                 'waitingQueues' => collect([]),
                 'activeQueue' => null,
                 'skippedQueues' => collect([]),
+                'handledQueues' => collect([]),
                 'counter' => $user->counter
             ]);
         }
@@ -43,10 +44,18 @@ class QueueController extends Controller
             ->latest('updated_at')
             ->first();
 
+        // Handled queues for today at this counter
+        $handledQueues = Queue::where('schedule_id', $schedule->id)
+            ->where('counter_id', $user->counter_id)
+            ->where('status', 'done')
+            ->latest('updated_at')
+            ->get();
+
         return view('petugas.index', [
             'waitingQueues' => $queues->where('status', 'waiting')->sortBy('id'),
             'activeQueue' => $activeQueue,
             'skippedQueues' => $queues->where('status', 'skipped')->where('counter_id', $user->counter_id)->sortByDesc('updated_at'),
+            'handledQueues' => $handledQueues,
             'counter' => $user->counter
         ]);
     }
