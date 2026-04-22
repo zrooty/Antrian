@@ -9,7 +9,10 @@
         let timeLeft = 10;
 
         function fetchQueueStatus() {
-            fetch('{{ route('dashboard.api.status') }}')
+            const urlParams = new URLSearchParams(window.location.search);
+            const page = urlParams.get('page') || 1;
+
+            fetch(`{{ route('dashboard.api.status') }}?page=${page}`)
                 .then(response => response.json())
                 .then(data => {
                     if (!data.activeQueue) {
@@ -35,8 +38,8 @@
                     updateDynamicContent(dynamicContent, q, data.position, data.estimasi);
 
                     // 4. Update History Table
-                    if (data.historyQueues) {
-                        updateHistoryTable(data.historyQueues);
+                    if (data.historyQueues && data.historyQueues.data) {
+                        updateHistoryTable(data.historyQueues.data);
                     }
                 })
                 .catch(error => console.error("Update failed:", error));

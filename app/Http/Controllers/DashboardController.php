@@ -55,8 +55,7 @@ class DashboardController extends Controller
         $historyQueues = Queue::where('user_id', $user->id)
             ->with(['service', 'counter', 'schedule'])
             ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();
+            ->paginate(10);
         
         return view('dashboard', compact('activeQueue', 'position', 'estimasi', 'doneQueue', 'historyQueues'));
     }
@@ -89,8 +88,7 @@ class DashboardController extends Controller
         $historyQueues = Queue::where('user_id', $user->id)
             ->with(['service', 'counter', 'schedule'])
             ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();
+            ->paginate(10);
         
         return response()->json([
             'activeQueue' => $activeQueue,
