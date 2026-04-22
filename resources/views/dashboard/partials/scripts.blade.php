@@ -15,14 +15,29 @@
             fetch(`{{ route('dashboard.api.status') }}?page=${page}`)
                 .then(response => response.json())
                 .then(data => {
-                    if (!data.activeQueue) {
-                        // If queue is done or deleted, reload to show Condition C or A
+                    const q = data.activeQueue;
+                    
+                    // Logic Reload: Hanya reload jika terjadi perubahan state (Antrian muncul atau hilang)
+                    const hasActiveQueueElements = !!(statusBadge || queueNumberText);
+                    const hasNewActiveQueue = !!q;
+
+                    if (hasActiveQueueElements !== hasNewActiveQueue) {
                         window.location.reload();
                         return;
                     }
 
-                    const q = data.activeQueue;
-                    
+                    if (!q) {
+                        // Jika memang tidak ada antrian aktif, tetap update riwayat jika ada
+                        if (data.historyQueues && data.historyQueues.data) {
+                            updateHistoryTable(data.historyQueues.data);
+                        }
+                        if (data.pagination) {
+                            const paginationContainer = document.getElementById('pagination-container');
+                            if (paginationContainer) paginationContainer.innerHTML = data.pagination;
+                        }
+                        return;
+                    }
+
                     // 1. Update Number
                     if (queueNumberText) queueNumberText.innerText = q.nomor_antrian;
 

@@ -66,23 +66,24 @@ class DashboardController extends Controller
         $today = Carbon::today()->toDateString();
         $schedule = Schedule::where('tanggal', $today)->first();
         
-        if (!$schedule) return response()->json(['activeQueue' => null]);
-        
-        $activeQueue = Queue::where('user_id', $user->id)
-            ->where('schedule_id', $schedule->id)
-            ->whereNotIn('status', [Queue::STATUS_DONE])
-            ->with(['service', 'counter', 'schedule'])
-            ->first();
-            
+        $activeQueue = null;
         $position = 0;
         $estimasi = 0;
-        
-        if ($activeQueue && $activeQueue->status === Queue::STATUS_WAITING) {
-            $position = Queue::where('schedule_id', $schedule->id)
-                ->where('status', Queue::STATUS_WAITING)
-                ->where('id', '<', $activeQueue->id)
-                ->count() + 1;
-            $estimasi = $position * 5;
+
+        if ($schedule) {
+            $activeQueue = Queue::where('user_id', $user->id)
+                ->where('schedule_id', $schedule->id)
+                ->whereNotIn('status', [Queue::STATUS_DONE])
+                ->with(['service', 'counter', 'schedule'])
+                ->first();
+                
+            if ($activeQueue && $activeQueue->status === Queue::STATUS_WAITING) {
+                $position = Queue::where('schedule_id', $schedule->id)
+                    ->where('status', Queue::STATUS_WAITING)
+                    ->where('id', '<', $activeQueue->id)
+                    ->count() + 1;
+                $estimasi = $position * 5;
+            }
         }
         
         $historyQueues = Queue::where('user_id', $user->id)
