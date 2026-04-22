@@ -12,10 +12,6 @@
             fetch('{{ route('dashboard.api.status') }}')
                 .then(response => response.json())
                 .then(data => {
-                    // Reset countdown visually
-                    timeLeft = 10;
-                    if (countdownElement) countdownElement.textContent = timeLeft;
-
                     if (!data.activeQueue) {
                         // If queue is done or deleted, reload to show Condition C or A
                         window.location.reload();
@@ -158,11 +154,13 @@
         // Polling interval
         setInterval(function() {
             timeLeft--;
-            if (countdownElement) countdownElement.textContent = timeLeft;
             
             if (timeLeft <= 0) {
+                timeLeft = 10;
                 fetchQueueStatus();
             }
+            
+            if (countdownElement) countdownElement.textContent = timeLeft;
         }, 1000);
     });
 </script>
