@@ -38,11 +38,10 @@ jobs:
       - name: Restart Reverb (WebSocket)
         run: php artisan reverb:restart || true
 
-      - name: Fix Permissions
+      - name: Fix Permissions (no sudo)
         run: |
-          sudo chown -R www-data:www-data .
-          sudo chmod -R 775 storage bootstrap/cache
+          chmod -R 775 storage bootstrap/cache
 
       - name: Maintenance Mode (Up)
         if: always()
-        run: sudo php artisan up
+        run: php artisan up
