@@ -36,6 +36,65 @@ class AdminController extends Controller
     }
 
     /**
+     * Get JSON data for Live Monitoring
+     */
+    public function getMonitoringData()
+    {
+        $today = Carbon::today()->toDateString();
+        $schedule = \App\Models\Schedule::where('tanggal', $today)->first();
+
+        // Ambil semua loket aktif
+        $counters = \App\Models\Counter::where('status', 'active')->get()->map(function ($counter) use ($schedule) {
+            // Cek apakah ada antrian yang sedang di proses atau dipanggil oleh loket ini
+            $activeQueue = null;
+            if ($schedule) {
+                $activeQueue = Queue::where('schedule_id', $schedule->id)
+                    ->where('counter_id', $counter->id)
+                    ->whereIn('status', [Queue::STATUS_CALLED, Queue::STATUS_PROCESSING])
+                    ->with(['user', 'service'])
+                    ->first();
+            }
+
+            return [
+                'id' => $counter->id,
+                'name' => $counter->name,
+                'code' => $counter->code,
+                'active_queue' => $activeQueue ? [
+                    'nomor_antrian' => $activeQueue->nomor_antrian,
+                    'status' => $activeQueue->status,
+                    'patient_name' => $activeQueue->user->name ?? 'Pasien',
+                    'service_name' => $activeQueue->service->nama_layanan ?? '-',
+                ] : null,
+            ];
+        });
+
+        // Ambil antrian yang sedang menunggu (maksimal 20 untuk performa)
+        $waitingQueues = collect();
+        if ($schedule) {
+            $waitingQueues = Queue::where('schedule_id', $schedule->id)
+                ->where('status', Queue::STATUS_WAITING)
+                ->with(['user', 'service'])
+                ->oldest('created_at')
+                ->take(20)
+                ->get()
+                ->map(function ($queue) {
+                    return [
+                        'id' => $queue->id,
+                        'nomor_antrian' => $queue->nomor_antrian,
+                        'patient_name' => $queue->user->name ?? 'Pasien',
+                        'service_name' => $queue->service->nama_layanan ?? '-',
+                        'time' => $queue->created_at->format('H:i'),
+                    ];
+                });
+        }
+
+        return response()->json([
+            'counters' => $counters,
+            'waiting_queues' => $waitingQueues,
+        ]);
+    }
+
+    /**
      * Operational view
      */
     public function operationalIndex()

@@ -24,19 +24,23 @@ class UserSeeder extends Seeder
         ]);
 
         // Petugas Loket 1
+        $counter1 = \App\Models\Counter::where('code', 'A')->first();
         User::create([
             'name' => 'Petugas Loket 1',
             'email' => 'petugas1.uat@antrian.test',
             'password' => Hash::make('password'),
             'role' => 'petugas',
+            'counter_id' => $counter1->id ?? null,
         ]);
 
         // Petugas Loket 2
+        $counter2 = \App\Models\Counter::where('code', 'B')->first();
         User::create([
             'name' => 'Petugas Loket 2',
             'email' => 'petugas2.uat@antrian.test',
             'password' => Hash::make('password'),
             'role' => 'petugas',
+            'counter_id' => $counter2->id ?? null,
         ]);
 
         // --- Akun Pasien Test (Statis) ---

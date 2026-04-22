@@ -55,22 +55,22 @@
                             <span class="ms-3">Monitoring</span>
                         </x-sidebar-link>
                     </li>
-                    <li>
-                        <button type="button" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700" aria-controls="dropdown-mgmt" data-collapse-toggle="dropdown-mgmt">
+                    <li x-data="{ open: {{ request()->routeIs('admin.services.*') || request()->routeIs('admin.counters.*') ? 'true' : 'false' }} }">
+                        <button type="button" @click="open = !open" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
                             <svg class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 18">
                                 <path d="M15.977.783A1 1 0 0 0 15 0H3a1 1 0 0 0-.977.783L.2 9h4.285a3.99 3.99 0 0 1 3.515 2.114L9.414 13.9a1 1 0 0 0 1.172 0l1.414-2.786A3.99 3.99 0 0 1 15.515 9h4.285L15.977.783Z"/>
                             </svg>
                             <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Manajemen Data</span>
-                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                            <svg class="w-3 h-3 transition-transform" :class="{'rotate-180': open}" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
                             </svg>
                         </button>
-                        <ul id="dropdown-mgmt" class="hidden py-2 space-y-2">
+                        <ul x-show="open" x-transition.opacity.duration.300ms class="py-2 space-y-2">
                             <li>
-                                <a href="{{ route('admin.services.index') }}" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Data Layanan</a>
+                                <a href="{{ route('admin.services.index') }}" class="flex items-center w-full p-2 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:hover:bg-gray-700 {{ request()->routeIs('admin.services.*') ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-bold' : 'text-gray-900 dark:text-white' }}">Data Layanan</a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.counters.index') }}" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Data Loket</a>
+                                <a href="{{ route('admin.counters.index') }}" class="flex items-center w-full p-2 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:hover:bg-gray-700 {{ request()->routeIs('admin.counters.*') ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-bold' : 'text-gray-900 dark:text-white' }}">Data Loket</a>
                             </li>
                         </ul>
                     </li>
@@ -123,7 +123,21 @@
                     </li>
                 </ul>
 
-                <div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+                    <button x-data="{ isDark: document.documentElement.classList.contains('dark') }"
+                            @click="isDark = !isDark; document.documentElement.classList.toggle('dark'); localStorage.theme = isDark ? 'dark' : 'light'"
+                            type="button" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">
+                        <!-- Moon icon (shows in light mode) -->
+                        <svg x-show="!isDark" class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <!-- Sun icon (shows in dark mode) -->
+                        <svg x-show="isDark" style="display: none;" class="flex-shrink-0 w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.22 2.364a1 1 0 011.415 0l.707.707a1 1 0 01-1.414 1.415l-.707-.707a1 1 0 010-1.415zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zm-2.565 4.93a1 1 0 01-.707-.708l-.707-.707a1 1 0 111.414-1.414l.707.707a1 1 0 01-.707 1.414zM10 18a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zm-4.22-2.364a1 1 0 01-1.415 0l-.707-.707a1 1 0 111.414-1.415l.707.707a1 1 0 010 1.415zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm2.364-4.22a1 1 0 01.708-.707l.707-.707a1 1 0 111.414 1.414l-.707.707a1 1 0 01-1.414-1.414zM10 5a5 5 0 100 10 5 5 0 000-10z"></path>
+                        </svg>
+                        <span class="ms-3 font-medium" x-text="isDark ? 'Mode Terang' : 'Mode Gelap'"></span>
+                    </button>
+
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg group hover:bg-red-50 dark:text-white dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold">

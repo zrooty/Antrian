@@ -86,6 +86,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'rekapIndex'])->name('rekap'); // Keeping legacy name for now
         Route::get('/monitoring', [AdminController::class, 'monitoringIndex'])->name('monitoring');
+        Route::get('/monitoring/data', [AdminController::class, 'getMonitoringData'])->name('monitoring.data');
         
         // Manajemen Data
         Route::resource('services', \App\Http\Controllers\Admin\ServiceController::class);

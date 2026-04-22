@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             ServiceSeeder::class,
+            CounterSeeder::class,
             // QueueSeeder::class, // Opsional: Aktifkan jika ingin data antrian awal untuk UAT
             UserSeeder::class,
         ]);

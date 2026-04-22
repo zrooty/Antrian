@@ -37,10 +37,22 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:pasien,petugas,admin',
-            'counter_id' => 'nullable|exists:counters,id',
+            'counter_id' => [
+                'required_if:role,petugas',
+                'nullable',
+                'exists:counters,id,status,active'
+            ],
+        ], [
+            'counter_id.required_if' => 'Loket wajib dipilih jika role adalah petugas.',
+            'counter_id.exists' => 'Loket yang dipilih tidak valid atau tidak aktif.',
         ]);
 
         $validated['password'] = bcrypt($validated['password']);
+
+        // Jika bukan petugas, pastikan counter_id null
+        if ($validated['role'] !== 'petugas') {
+            $validated['counter_id'] = null;
+        }
 
         User::create($validated);
 
@@ -73,12 +85,24 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'role' => 'required|in:pasien,petugas,admin',
-            'counter_id' => 'nullable|exists:counters,id',
+            'counter_id' => [
+                'required_if:role,petugas',
+                'nullable',
+                'exists:counters,id,status,active'
+            ],
+        ], [
+            'counter_id.required_if' => 'Loket wajib dipilih jika role adalah petugas.',
+            'counter_id.exists' => 'Loket yang dipilih tidak valid atau tidak aktif.',
         ]);
 
         if ($request->filled('password')) {
             $request->validate(['password' => 'confirmed|min:8']);
             $validated['password'] = bcrypt($request->password);
+        }
+
+        // Jika bukan petugas, pastikan counter_id null
+        if ($validated['role'] !== 'petugas') {
+            $validated['counter_id'] = null;
         }
 
         $user->update($validated);
