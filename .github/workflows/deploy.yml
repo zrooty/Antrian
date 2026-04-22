@@ -1,0 +1,39 @@
+name: Auto Deploy Laravel
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull latest code
+        run: |
+          cd /var/www/laravel-antrian
+          git pull origin main
+
+      - name: Install PHP dependencies
+        run: |
+          cd /var/www/laravel-antrian
+          composer install --no-dev --optimize-autoloader
+
+      - name: Build frontend (Vite)
+        run: |
+          cd /var/www/laravel-antrian
+          npm install
+          npm run build
+
+      - name: Laravel setup
+        run: |
+          cd /var/www/laravel-antrian
+          php artisan migrate --force
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
+      - name: Fix permissions
+        run: |
+          chown -R www-data:www-data /var/www/laravel-antrian
+          chmod -R 775 /var/www/laravel-antrian/storage /var/www/laravel-antrian/bootstrap/cache
