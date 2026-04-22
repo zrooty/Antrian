@@ -10,105 +10,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    $role = auth()->user()->role;
-    if ($role === 'admin') {
-        return redirect()->route('admin.rekap');
-    } elseif ($role === 'petugas') {
-        return redirect()->route('petugas.index');
-    }
-    
-    // Pasien: ambil antrian aktif hari ini
-    $user = auth()->user();
-    $today = \Carbon\Carbon::today()->toDateString();
-    $schedule = \App\Models\Schedule::where('tanggal', $today)->first();
-    
-    $activeQueue = null;
-    $position = 0;
-    $estimasi = 0;
-    
-    if ($schedule) {
-        // Cari antrian aktif (belum selesai) milik user ini hari ini
-        $activeQueue = \App\Models\Queue::where('user_id', $user->id)
-            ->where('schedule_id', $schedule->id)
-            ->whereNotIn('status', [
-                \App\Models\Queue::STATUS_DONE,
-            ])
-            ->with(['service', 'counter'])
-            ->first();
-        
-        if ($activeQueue && $activeQueue->status === \App\Models\Queue::STATUS_WAITING) {
-            // Hitung posisi: jumlah antrian waiting dengan id lebih kecil
-            $position = \App\Models\Queue::where('schedule_id', $schedule->id)
-                ->where('status', \App\Models\Queue::STATUS_WAITING)
-                ->where('id', '<', $activeQueue->id)
-                ->count() + 1;
-            
-            // Estimasi: posisi × 5 menit (default)
-            $estimasi = $position * 5;
-        }
-    }
-    
-    // Cek juga antrian yang sudah done hari ini (untuk riwayat)
-    $doneQueue = null;
-    if ($schedule && !$activeQueue) {
-        $doneQueue = \App\Models\Queue::where('user_id', $user->id)
-            ->where('schedule_id', $schedule->id)
-            ->where('status', \App\Models\Queue::STATUS_DONE)
-            ->with(['service', 'counter'])
-            ->latest()
-            ->first();
-    }
-
-    // Ambil riwayat antrian (semua waktu)
-    $historyQueues = \App\Models\Queue::where('user_id', $user->id)
-        ->with(['service', 'counter', 'schedule'])
-        ->orderBy('created_at', 'desc')
-        ->limit(10)
-        ->get();
-    
-    return view('dashboard', compact('activeQueue', 'position', 'estimasi', 'doneQueue', 'historyQueues'));
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard/api/status', function () {
-        $user = auth()->user();
-        $today = \Carbon\Carbon::today()->toDateString();
-        $schedule = \App\Models\Schedule::where('tanggal', $today)->first();
-        
-        if (!$schedule) return response()->json(['activeQueue' => null]);
-        
-        $activeQueue = \App\Models\Queue::where('user_id', $user->id)
-            ->where('schedule_id', $schedule->id)
-            ->whereNotIn('status', [\App\Models\Queue::STATUS_DONE])
-            ->with(['service', 'counter', 'schedule'])
-            ->first();
-            
-        $position = 0;
-        $estimasi = 0;
-        
-        if ($activeQueue && $activeQueue->status === \App\Models\Queue::STATUS_WAITING) {
-            $position = \App\Models\Queue::where('schedule_id', $schedule->id)
-                ->where('status', \App\Models\Queue::STATUS_WAITING)
-                ->where('id', '<', $activeQueue->id)
-                ->count() + 1;
-            $estimasi = $position * 5;
-        }
-        
-        // Ambil riwayat antrian (semua waktu)
-        $historyQueues = \App\Models\Queue::where('user_id', $user->id)
-            ->with(['service', 'counter', 'schedule'])
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();
-        
-        return response()->json([
-            'activeQueue' => $activeQueue,
-            'position' => $position,
-            'estimasi' => $estimasi,
-            'historyQueues' => $historyQueues
-        ]);
-    })->name('dashboard.api.status');
+    Route::get('/dashboard/api/status', [\App\Http\Controllers\DashboardController::class, 'status'])->name('dashboard.api.status');
 
     Route::get('/reservasi', [ReservationController::class, 'create'])->name('reservasi.create');
     Route::post('/reservasi', [ReservationController::class, 'store'])->name('reservasi.store');
