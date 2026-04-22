@@ -71,6 +71,37 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/dashboard/api/status', function () {
+        $user = auth()->user();
+        $today = \Carbon\Carbon::today()->toDateString();
+        $schedule = \App\Models\Schedule::where('tanggal', $today)->first();
+        
+        if (!$schedule) return response()->json(['activeQueue' => null]);
+        
+        $activeQueue = \App\Models\Queue::where('user_id', $user->id)
+            ->where('schedule_id', $schedule->id)
+            ->whereNotIn('status', [\App\Models\Queue::STATUS_DONE])
+            ->with(['service', 'counter', 'schedule'])
+            ->first();
+            
+        $position = 0;
+        $estimasi = 0;
+        
+        if ($activeQueue && $activeQueue->status === \App\Models\Queue::STATUS_WAITING) {
+            $position = \App\Models\Queue::where('schedule_id', $schedule->id)
+                ->where('status', \App\Models\Queue::STATUS_WAITING)
+                ->where('id', '<', $activeQueue->id)
+                ->count() + 1;
+            $estimasi = $position * 5;
+        }
+        
+        return response()->json([
+            'activeQueue' => $activeQueue,
+            'position' => $position,
+            'estimasi' => $estimasi
+        ]);
+    })->name('dashboard.api.status');
+
     Route::get('/reservasi', [ReservationController::class, 'create'])->name('reservasi.create');
     Route::post('/reservasi', [ReservationController::class, 'store'])->name('reservasi.store');
 
