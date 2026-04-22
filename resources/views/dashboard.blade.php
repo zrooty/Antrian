@@ -4,8 +4,7 @@
             {{ __('Dashboard Pasien') }}
         </h2>
         @if($activeQueue && in_array($activeQueue->status, ['waiting', 'called', 'processing']))
-            <!-- Auto refresh every 15 seconds to check queue position/status -->
-            <meta http-equiv="refresh" content="15">
+            <!-- Auto refresh handled by JS countdown -->
         @endif
     </x-slot>
 
@@ -105,7 +104,7 @@
                             </div>
                             <p class="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                Halaman ini akan termuat ulang otomatis setiap 15 detik.
+                                Halaman ini akan diperbarui otomatis dalam <span id="refresh-countdown" class="font-bold">15</span> detik.
                             </p>
 
                         @elseif($activeQueue->status === 'called')
@@ -213,4 +212,25 @@
 
         </div>
     </div>
+
+    @if($activeQueue && in_array($activeQueue->status, ['waiting', 'called', 'processing']))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let timeLeft = 15;
+            const countdownElement = document.getElementById('refresh-countdown');
+            
+            if (countdownElement) {
+                const timer = setInterval(function() {
+                    timeLeft--;
+                    countdownElement.textContent = timeLeft;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        window.location.reload();
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+    @endif
 </x-app-layout>
