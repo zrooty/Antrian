@@ -45,4 +45,4 @@ jobs:
 
       - name: Maintenance Mode (Up)
         if: always()
-        run: php artisan up
+        run: sudo php artisan up
