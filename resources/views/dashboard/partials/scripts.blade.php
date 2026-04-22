@@ -9,38 +9,58 @@
         let timeLeft = 10;
 
         function fetchQueueStatus() {
-            fetch('{{ route('dashboard.api.status') }}')
+            const urlParams = new URLSearchParams(window.location.search);
+            const page = urlParams.get('page') || 1;
+
+            fetch(`{{ route('dashboard.api.status') }}?page=${page}`)
                 .then(response => response.json())
                 .then(data => {
-                    // Reset countdown visually
-                    timeLeft = 10;
-                    if (countdownElement) countdownElement.textContent = timeLeft;
+                    const q = data.activeQueue;
+                    
+                    // Logic Reload: Hanya reload jika terjadi perubahan state (Antrian muncul atau hilang)
+                    const hasActiveQueueElements = !!(statusBadge || queueNumberText);
+                    const hasNewActiveQueue = !!q;
 
-                    if (!data.activeQueue) {
-                        // If queue is done or deleted, reload to show Condition C or A
+                    if (hasActiveQueueElements !== hasNewActiveQueue) {
                         window.location.reload();
                         return;
                     }
 
-                    const q = data.activeQueue;
-                    
+                    if (!q) {
+                        // Jika memang tidak ada antrian aktif, tetap update riwayat jika ada
+                        if (data.historyQueues && data.historyQueues.data) {
+                            updateHistoryTable(data.historyQueues.data);
+                        }
+                        if (data.pagination) {
+                            const paginationContainer = document.getElementById('pagination-container');
+                            if (paginationContainer) paginationContainer.innerHTML = data.pagination;
+                        }
+                        return;
+                    }
+
                     // 1. Update Number
                     if (queueNumberText) queueNumberText.innerText = q.nomor_antrian;
 
                     // 2. Update Badge & Accent
                     if (statusBadge) {
-                        updateBadge(statusBadge, q.status);
+                        updateBadge(statusBadge, q);
                     }
                     if (topAccent) {
-                        updateAccent(topAccent, q.status);
+                        updateAccent(topAccent, q);
                     }
 
                     // 3. Update Dynamic Content
                     updateDynamicContent(dynamicContent, q, data.position, data.estimasi);
 
                     // 4. Update History Table
-                    if (data.historyQueues) {
-                        updateHistoryTable(data.historyQueues);
+                    if (data.historyQueues && data.historyQueues.data) {
+                        updateHistoryTable(data.historyQueues.data);
+                    }
+
+                    // 5. Update Pagination Links
+                    if (data.pagination) {
+                        const paginationContainer = document.getElementById('pagination-container');
+                        if (paginationContainer) paginationContainer.innerHTML = data.pagination;
                     }
                 })
                 .catch(error => console.error("Update failed:", error));
@@ -64,7 +84,7 @@
             let html = '';
             history.forEach(item => {
                 const date = item.schedule ? formatDate(item.schedule.tanggal) : formatDate(item.created_at);
-                const statusHtml = getStatusBadge(item.status);
+                const statusHtml = getStatusBadge(item);
                 
                 html += `
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
@@ -93,41 +113,17 @@
             return d.toLocaleDateString('id-ID', options);
         }
 
-        function getStatusBadge(status) {
-            if (status === 'done') {
-                return '<span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded text-xs font-bold">SELESAI</span>';
-            } else if (status === 'skipped') {
-                return '<span class="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 rounded text-xs font-bold">DILEWATI</span>';
-            } else {
-                return `<span class="px-2 py-1 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 rounded text-xs font-bold uppercase">${status}</span>`;
-            }
+        function getStatusBadge(item) {
+            return `<span class="px-2 py-1 ${item.status_color} rounded text-xs font-bold border">${item.status_label}</span>`;
         }
 
-        function updateBadge(el, status) {
-            const colors = {
-                waiting: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
-                called: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border-blue-200 dark:border-blue-800 animate-pulse',
-                processing: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
-                skipped: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border-red-200 dark:border-red-800'
-            };
-            const labels = {
-                waiting: 'MENUNGGU PANGGILAN',
-                called: 'NOMOR DIPANGGIL',
-                processing: 'SEDANG DILAYANI',
-                skipped: 'TERLEWAT'
-            };
-            el.className = `px-4 py-2 rounded-full border font-bold text-sm tracking-widest ${colors[status] || ''}`;
-            el.innerText = labels[status] || status.toUpperCase();
+        function updateBadge(el, q) {
+            el.className = `px-4 py-2 rounded-full border font-bold text-sm tracking-widest ${q.status_color}`;
+            el.innerText = q.status_label;
         }
 
-        function updateAccent(el, status) {
-            const colors = {
-                called: 'bg-blue-500',
-                skipped: 'bg-red-500',
-                waiting: 'bg-indigo-500',
-                processing: 'bg-indigo-500'
-            };
-            el.className = `h-2 w-full ${colors[status] || 'bg-indigo-500'}`;
+        function updateAccent(el, q) {
+            el.className = `h-2 w-full ${q.accent_color}`;
         }
 
         function updateDynamicContent(el, q, position, estimasi) {
@@ -182,11 +178,30 @@
         // Polling interval
         setInterval(function() {
             timeLeft--;
-            if (countdownElement) countdownElement.textContent = timeLeft;
             
             if (timeLeft <= 0) {
+                timeLeft = 10;
                 fetchQueueStatus();
             }
+            
+            if (countdownElement) countdownElement.textContent = timeLeft;
         }, 1000);
+
+        // Intercept pagination clicks
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('#pagination-container a');
+            if (link) {
+                e.preventDefault();
+                const url = new URL(link.href);
+                const page = url.searchParams.get('page');
+                
+                // Update URL without reload
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?page=' + page;
+                window.history.pushState({path:newUrl},'',newUrl);
+                
+                // Fetch immediately
+                fetchQueueStatus();
+            }
+        });
     });
 </script>

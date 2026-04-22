@@ -44,7 +44,5 @@
         </div>
     </div>
 
-    @if($activeQueue && in_array($activeQueue->status, ['waiting', 'called', 'processing', 'skipped']))
-        @include('dashboard.partials.scripts')
-    @endif
+    @include('dashboard.partials.scripts')
 </x-app-layout>

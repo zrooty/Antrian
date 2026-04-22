@@ -1,24 +1,6 @@
-@php
-    $badgeColors = [
-        'waiting' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
-        'called' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border-blue-200 dark:border-blue-800 animate-pulse',
-        'processing' => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
-        'skipped' => 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border-red-200 dark:border-red-800',
-    ];
-    $badgeColor = $badgeColors[$activeQueue->status] ?? 'bg-gray-100 text-gray-800';
-    
-    $labels = [
-        'waiting' => 'MENUNGGU PANGGILAN',
-        'called' => 'NOMOR DIPANGGIL',
-        'processing' => 'SEDANG DILAYANI',
-        'skipped' => 'TERLEWAT',
-    ];
-    $badgeLabel = $labels[$activeQueue->status] ?? strtoupper($activeQueue->status);
-@endphp
-
 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-2xl border border-gray-100 dark:border-gray-700 relative">
     <!-- Top accent line -->
-    <div id="top-accent-line" class="h-2 w-full {{ $activeQueue->status === 'called' ? 'bg-blue-500' : ($activeQueue->status === 'skipped' ? 'bg-red-500' : 'bg-indigo-500') }}"></div>
+    <div id="top-accent-line" class="h-2 w-full {{ $activeQueue->accent_color }}"></div>
     
     <div class="p-8">
         <!-- Header & Badge -->
@@ -27,8 +9,8 @@
                 <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">{{ \Carbon\Carbon::parse($activeQueue->schedule->tanggal)->translatedFormat('l, d F Y') }}</p>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $activeQueue->service->nama_layanan }}</h1>
             </div>
-            <div id="status-badge" class="px-4 py-2 rounded-full border font-bold text-sm tracking-widest {{ $badgeColor }}">
-                {{ $badgeLabel }}
+            <div id="status-badge" class="px-4 py-2 rounded-full border font-bold text-sm tracking-widest {{ $activeQueue->status_color }}">
+                {{ $activeQueue->status_label }}
             </div>
         </div>
 
