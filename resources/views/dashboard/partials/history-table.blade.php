@@ -44,7 +44,7 @@
             </tbody>
         </table>
     </div>
-    <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700">
+    <div id="pagination-container" class="px-6 py-4 border-t border-gray-100 dark:border-gray-700">
         {{ $historyQueues->links() }}
     </div>
 </div>

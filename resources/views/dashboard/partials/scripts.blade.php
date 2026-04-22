@@ -41,6 +41,12 @@
                     if (data.historyQueues && data.historyQueues.data) {
                         updateHistoryTable(data.historyQueues.data);
                     }
+
+                    // 5. Update Pagination Links
+                    if (data.pagination) {
+                        const paginationContainer = document.getElementById('pagination-container');
+                        if (paginationContainer) paginationContainer.innerHTML = data.pagination;
+                    }
                 })
                 .catch(error => console.error("Update failed:", error));
         }
@@ -165,5 +171,22 @@
             
             if (countdownElement) countdownElement.textContent = timeLeft;
         }, 1000);
+
+        // Intercept pagination clicks
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('#pagination-container a');
+            if (link) {
+                e.preventDefault();
+                const url = new URL(link.href);
+                const page = url.searchParams.get('page');
+                
+                // Update URL without reload
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?page=' + page;
+                window.history.pushState({path:newUrl},'',newUrl);
+                
+                // Fetch immediately
+                fetchQueueStatus();
+            }
+        });
     });
 </script>

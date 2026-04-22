@@ -94,7 +94,8 @@ class DashboardController extends Controller
             'activeQueue' => $activeQueue,
             'position' => $position,
             'estimasi' => $estimasi,
-            'historyQueues' => $historyQueues
+            'historyQueues' => $historyQueues,
+            'pagination' => (string) $historyQueues->links()
         ]);
     }
 }
