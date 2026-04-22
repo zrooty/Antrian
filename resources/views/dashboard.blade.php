@@ -3,7 +3,7 @@
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Dashboard Pasien') }}
         </h2>
-        @if($activeQueue && in_array($activeQueue->status, ['waiting', 'called', 'processing']))
+        @if($activeQueue && in_array($activeQueue->status, ['waiting', 'called', 'processing', 'skipped']))
             <!-- Auto refresh handled by JS countdown -->
         @endif
     </x-slot>
@@ -102,10 +102,8 @@
                                     <p class="text-3xl font-black text-yellow-800 dark:text-yellow-300">± {{ $estimasi }} <span class="text-lg font-bold">menit</span></p>
                                 </div>
                             </div>
-                            <p class="text-center mt-6 text-sm text-gray-500 dark:text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                Halaman ini akan diperbarui otomatis dalam <span id="refresh-countdown" class="font-bold">15</span> detik.
-                            </p>
+                            </div>
+
 
                         @elseif($activeQueue->status === 'called')
                             <div class="p-8 rounded-2xl bg-blue-600 text-white text-center shadow-xl animate-pulse">
@@ -135,6 +133,11 @@
                                 <p class="text-red-600 dark:text-red-300">Panggilan untuk nomor Anda tidak direspons. Silakan melapor kepada petugas untuk melakukan pemanggilan ulang.</p>
                             </div>
                         @endif
+
+                        <p class="text-center mt-8 text-xs text-gray-400 dark:text-gray-500 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                            Pembaruan otomatis dalam <span id="refresh-countdown" class="font-bold mx-1 text-gray-600 dark:text-gray-300">15</span> detik
+                        </p>
 
                     </div>
                 </div>
@@ -213,7 +216,7 @@
         </div>
     </div>
 
-    @if($activeQueue && in_array($activeQueue->status, ['waiting', 'called', 'processing']))
+    @if($activeQueue && in_array($activeQueue->status, ['waiting', 'called', 'processing', 'skipped']))
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             let timeLeft = 15;
