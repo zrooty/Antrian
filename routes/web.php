@@ -59,8 +59,15 @@ Route::get('/dashboard', function () {
             ->latest()
             ->first();
     }
+
+    // Ambil riwayat antrian (semua waktu)
+    $historyQueues = \App\Models\Queue::where('user_id', $user->id)
+        ->with(['service', 'counter', 'schedule'])
+        ->orderBy('created_at', 'desc')
+        ->limit(10)
+        ->get();
     
-    return view('dashboard', compact('activeQueue', 'position', 'estimasi', 'doneQueue'));
+    return view('dashboard', compact('activeQueue', 'position', 'estimasi', 'doneQueue', 'historyQueues'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
