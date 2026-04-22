@@ -13,44 +13,51 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        // --- Akun Utama (Statis) ---
+
         // Admin
         User::create([
-            'name' => 'Admin Sistem',
-            'email' => 'admin@antrian.test',
+            'name' => 'Administrator UAT',
+            'email' => 'admin.uat@antrian.test',
             'password' => Hash::make('password'),
             'role' => 'admin',
         ]);
 
-        // Petugas 1
+        // Petugas Loket 1
         User::create([
-            'name' => 'Budi Petugas',
-            'email' => 'petugas@antrian.test',
+            'name' => 'Petugas Loket 1',
+            'email' => 'petugas1.uat@antrian.test',
             'password' => Hash::make('password'),
             'role' => 'petugas',
         ]);
 
-        // Petugas 2
+        // Petugas Loket 2
         User::create([
-            'name' => 'Siti Petugas',
-            'email' => 'petugas2@antrian.test',
+            'name' => 'Petugas Loket 2',
+            'email' => 'petugas2.uat@antrian.test',
             'password' => Hash::make('password'),
             'role' => 'petugas',
         ]);
 
-        // Pasien Contoh
+        // --- Akun Pasien Test (Statis) ---
+
         User::create([
-            'name' => 'Rizky Pasien',
-            'email' => 'pasien@antrian.test',
+            'name' => 'Pasien Test 1',
+            'email' => 'pasien1.uat@antrian.test',
             'password' => Hash::make('password'),
             'role' => 'pasien',
         ]);
 
-        // Create 5 more random pasien using factory if available, 
-        // but let's stick to manual for simplicity in this task.
         User::create([
-            'name' => 'Andi',
-            'email' => 'andi@example.com',
+            'name' => 'Pasien Test 2',
+            'email' => 'pasien2.uat@antrian.test',
             'password' => Hash::make('password'),
+            'role' => 'pasien',
+        ]);
+
+        // --- Akun Pasien Dummy (Dinamis) ---
+
+        User::factory(20)->create([
             'role' => 'pasien',
         ]);
     }
