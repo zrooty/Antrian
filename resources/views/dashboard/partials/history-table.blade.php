@@ -29,13 +29,9 @@
                             {{ $history->nomor_antrian }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            @if($history->status === 'done')
-                                <span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded text-xs font-bold">SELESAI</span>
-                            @elseif($history->status === 'skipped')
-                                <span class="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 rounded text-xs font-bold">DILEWATI</span>
-                            @else
-                                <span class="px-2 py-1 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 rounded text-xs font-bold uppercase">{{ $history->status }}</span>
-                            @endif
+                            <span class="px-2 py-1 {{ $history->status_color }} rounded text-xs font-bold border">
+                                {{ $history->status_label }}
+                            </span>
                         </td>
                     </tr>
                 @empty

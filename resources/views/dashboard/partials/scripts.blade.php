@@ -29,10 +29,10 @@
 
                     // 2. Update Badge & Accent
                     if (statusBadge) {
-                        updateBadge(statusBadge, q.status);
+                        updateBadge(statusBadge, q);
                     }
                     if (topAccent) {
-                        updateAccent(topAccent, q.status);
+                        updateAccent(topAccent, q);
                     }
 
                     // 3. Update Dynamic Content
@@ -64,7 +64,7 @@
             let html = '';
             history.forEach(item => {
                 const date = item.schedule ? formatDate(item.schedule.tanggal) : formatDate(item.created_at);
-                const statusHtml = getStatusBadge(item.status);
+                const statusHtml = getStatusBadge(item);
                 
                 html += `
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
@@ -93,41 +93,17 @@
             return d.toLocaleDateString('id-ID', options);
         }
 
-        function getStatusBadge(status) {
-            if (status === 'done') {
-                return '<span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded text-xs font-bold">SELESAI</span>';
-            } else if (status === 'skipped') {
-                return '<span class="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 rounded text-xs font-bold">DILEWATI</span>';
-            } else {
-                return `<span class="px-2 py-1 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 rounded text-xs font-bold uppercase">${status}</span>`;
-            }
+        function getStatusBadge(item) {
+            return `<span class="px-2 py-1 ${item.status_color} rounded text-xs font-bold border">${item.status_label}</span>`;
         }
 
-        function updateBadge(el, status) {
-            const colors = {
-                waiting: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
-                called: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border-blue-200 dark:border-blue-800 animate-pulse',
-                processing: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
-                skipped: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 border-red-200 dark:border-red-800'
-            };
-            const labels = {
-                waiting: 'MENUNGGU PANGGILAN',
-                called: 'NOMOR DIPANGGIL',
-                processing: 'SEDANG DILAYANI',
-                skipped: 'TERLEWAT'
-            };
-            el.className = `px-4 py-2 rounded-full border font-bold text-sm tracking-widest ${colors[status] || ''}`;
-            el.innerText = labels[status] || status.toUpperCase();
+        function updateBadge(el, q) {
+            el.className = `px-4 py-2 rounded-full border font-bold text-sm tracking-widest ${q.status_color}`;
+            el.innerText = q.status_label;
         }
 
-        function updateAccent(el, status) {
-            const colors = {
-                called: 'bg-blue-500',
-                skipped: 'bg-red-500',
-                waiting: 'bg-indigo-500',
-                processing: 'bg-indigo-500'
-            };
-            el.className = `h-2 w-full ${colors[status] || 'bg-indigo-500'}`;
+        function updateAccent(el, q) {
+            el.className = `h-2 w-full ${q.accent_color}`;
         }
 
         function updateDynamicContent(el, q, position, estimasi) {
