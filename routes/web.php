@@ -95,10 +95,18 @@ Route::middleware('auth')->group(function () {
             $estimasi = $position * 5;
         }
         
+        // Ambil riwayat antrian (semua waktu)
+        $historyQueues = \App\Models\Queue::where('user_id', $user->id)
+            ->with(['service', 'counter', 'schedule'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+        
         return response()->json([
             'activeQueue' => $activeQueue,
             'position' => $position,
-            'estimasi' => $estimasi
+            'estimasi' => $estimasi,
+            'historyQueues' => $historyQueues
         ]);
     })->name('dashboard.api.status');
 

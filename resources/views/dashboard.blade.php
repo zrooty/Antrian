@@ -176,7 +176,7 @@
                                 <th class="px-6 py-4 font-semibold">Status</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        <tbody id="history-table-body" class="divide-y divide-gray-100 dark:divide-gray-700">
                             @forelse($historyQueues as $history)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
@@ -253,8 +253,70 @@
 
                         // 3. Update Dynamic Content
                         updateDynamicContent(dynamicContent, q, data.position, data.estimasi);
+
+                        // 4. Update History Table
+                        if (data.historyQueues) {
+                            updateHistoryTable(data.historyQueues);
+                        }
                     })
                     .catch(error => console.error("Update failed:", error));
+            }
+
+            function updateHistoryTable(history) {
+                const tbody = document.getElementById('history-table-body');
+                if (!tbody) return;
+
+                if (history.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400 text-sm italic">
+                                Belum ada riwayat kunjungan sebelumnya.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                history.forEach(item => {
+                    const date = item.schedule ? formatDate(item.schedule.tanggal) : formatDate(item.created_at);
+                    const statusHtml = getStatusBadge(item.status);
+                    
+                    html += `
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                ${date}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                                ${item.service ? item.service.nama_layanan : '-'}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                                ${item.nomor_antrian}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                ${statusHtml}
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            }
+
+            function formatDate(dateStr) {
+                const d = new Date(dateStr);
+                const options = { day: '2-digit', month: 'short', year: 'numeric' };
+                // Simple formatting for now
+                return d.toLocaleDateString('id-ID', options);
+            }
+
+            function getStatusBadge(status) {
+                if (status === 'done') {
+                    return '<span class="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded text-xs font-bold">SELESAI</span>';
+                } else if (status === 'skipped') {
+                    return '<span class="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 rounded text-xs font-bold">DILEWATI</span>';
+                } else {
+                    return `<span class="px-2 py-1 bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 rounded text-xs font-bold uppercase">${status}</span>`;
+                }
             }
 
             function updateBadge(el, status) {
