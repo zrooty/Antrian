@@ -32,8 +32,3 @@ jobs:
           php artisan config:cache
           php artisan route:cache
           php artisan view:cache
-
-      - name: Fix permissions
-        run: |
-          chown -R www-data:www-data /var/www/laravel-antrian
-          chmod -R 775 /var/www/laravel-antrian/storage /var/www/laravel-antrian/bootstrap/cache
