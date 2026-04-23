@@ -21,21 +21,46 @@ class QueueController extends Controller
             return redirect('/')->with('error', 'Anda belum ditugaskan ke loket manapun. Silakan hubungi Admin.');
         }
 
+        $data = $this->getDashboardData($user);
+        $data['counter'] = $user->counter;
+
+        return view('petugas.index', $data);
+    }
+
+    /**
+     * Get updated dashboard content for AJAX.
+     */
+    public function getPetugasData()
+    {
+        $user = auth()->user();
+        $data = $this->getDashboardData($user);
+        
+        return response()->json([
+            'waitingQueues' => $data['waitingQueues']->items(),
+            'totalWaiting' => $data['waitingQueues']->total(),
+            'pagination' => (string) $data['waitingQueues']->links(),
+            'activeQueueHtml' => view('petugas.partials.active-queue', ['activeQueue' => $data['activeQueue']])->render(),
+            'skippedQueuesHtml' => view('petugas.partials.skipped-list', ['skippedQueues' => $data['skippedQueues']])->render(),
+            'handledQueuesHtml' => view('petugas.partials.handled-list', ['handledQueues' => $data['handledQueues']])->render(),
+        ]);
+    }
+
+    /**
+     * Common data fetching logic for officer dashboard.
+     */
+    private function getDashboardData($user)
+    {
         $today = Carbon::today()->toDateString();
         $schedule = Schedule::where('tanggal', $today)->first();
 
         if (!$schedule) {
-            return view('petugas.index', [
+            return [
                 'waitingQueues' => collect([]),
                 'activeQueue' => null,
                 'skippedQueues' => collect([]),
                 'handledQueues' => collect([]),
-                'counter' => $user->counter
-            ]);
+            ];
         }
-
-        // Get queues for today
-        $queues = Queue::where('schedule_id', $schedule->id)->get();
 
         // Active queue for this specific counter
         $activeQueue = Queue::where('schedule_id', $schedule->id)
@@ -44,6 +69,19 @@ class QueueController extends Controller
             ->latest('updated_at')
             ->first();
 
+        // Waiting queues with pagination
+        $waitingQueues = Queue::where('schedule_id', $schedule->id)
+            ->where('status', 'waiting')
+            ->orderBy('id', 'asc')
+            ->paginate(10);
+
+        // Skipped queues (typically small enough for today at one counter)
+        $skippedQueues = Queue::where('schedule_id', $schedule->id)
+            ->where('status', 'skipped')
+            ->where('counter_id', $user->counter_id)
+            ->latest('updated_at')
+            ->get();
+
         // Handled queues for today at this counter
         $handledQueues = Queue::where('schedule_id', $schedule->id)
             ->where('counter_id', $user->counter_id)
@@ -51,13 +89,12 @@ class QueueController extends Controller
             ->latest('updated_at')
             ->get();
 
-        return view('petugas.index', [
-            'waitingQueues' => $queues->where('status', 'waiting')->sortBy('id'),
+        return [
+            'waitingQueues' => $waitingQueues,
             'activeQueue' => $activeQueue,
-            'skippedQueues' => $queues->where('status', 'skipped')->where('counter_id', $user->counter_id)->sortByDesc('updated_at'),
+            'skippedQueues' => $skippedQueues,
             'handledQueues' => $handledQueues,
-            'counter' => $user->counter
-        ]);
+        ];
     }
 
     /**
@@ -78,6 +115,7 @@ class QueueController extends Controller
             ->exists();
 
         if ($hasActive) {
+            if ($request->ajax()) return response()->json(['error' => 'Selesaikan antrian aktif terlebih dahulu.'], 422);
             return back()->with('error', 'Selesaikan antrian aktif terlebih dahulu.');
         }
 
@@ -87,6 +125,7 @@ class QueueController extends Controller
             ->first();
 
         if (!$nextQueue) {
+            if ($request->ajax()) return response()->json(['error' => 'Tidak ada antrian menunggu.'], 422);
             return back()->with('error', 'Tidak ada antrian menunggu.');
         }
 
@@ -98,7 +137,9 @@ class QueueController extends Controller
         // Broadcast event
         event(new PanggilAntrian($nextQueue->nomor_antrian, $user->counter?->name ?? 'Loket'));
 
-        return back()->with('status', 'Memanggil nomor ' . $nextQueue->nomor_antrian);
+        $msg = 'Memanggil nomor ' . $nextQueue->nomor_antrian;
+        if ($request->ajax()) return response()->json(['status' => $msg]);
+        return back()->with('status', $msg);
     }
 
     /**
@@ -107,12 +148,15 @@ class QueueController extends Controller
     public function startProcessing(Queue $queue)
     {
         if ($queue->status !== 'called') {
+            if (request()->ajax()) return response()->json(['error' => 'Antrian tidak dalam status dipanggil.'], 422);
             return back()->with('error', 'Antrian tidak dalam status dipanggil.');
         }
 
         $queue->update(['status' => 'processing']);
 
-        return back()->with('status', 'Pelayanan dimulai untuk nomor ' . $queue->nomor_antrian);
+        $msg = 'Pelayanan dimulai untuk nomor ' . $queue->nomor_antrian;
+        if (request()->ajax()) return response()->json(['status' => $msg]);
+        return back()->with('status', $msg);
     }
 
     /**
@@ -121,12 +165,15 @@ class QueueController extends Controller
     public function finishQueue(Queue $queue)
     {
         if ($queue->status !== 'processing') {
+            if (request()->ajax()) return response()->json(['error' => 'Antrian tidak sedang diproses.'], 422);
             return back()->with('error', 'Antrian tidak sedang diproses.');
         }
 
         $queue->update(['status' => 'done']);
 
-        return back()->with('status', 'Pelayanan selesai untuk nomor ' . $queue->nomor_antrian);
+        $msg = 'Pelayanan selesai untuk nomor ' . $queue->nomor_antrian;
+        if (request()->ajax()) return response()->json(['status' => $msg]);
+        return back()->with('status', $msg);
     }
 
     /**
@@ -135,12 +182,15 @@ class QueueController extends Controller
     public function skipQueue(Queue $queue)
     {
         if ($queue->status !== 'called') {
+            if (request()->ajax()) return response()->json(['error' => 'Hanya antrian yang dipanggil yang dapat dilewati.'], 422);
             return back()->with('error', 'Hanya antrian yang dipanggil yang dapat dilewati.');
         }
 
         $queue->update(['status' => 'skipped']);
 
-        return back()->with('status', 'Nomor ' . $queue->nomor_antrian . ' dilewati.');
+        $msg = 'Nomor ' . $queue->nomor_antrian . ' dilewati.';
+        if (request()->ajax()) return response()->json(['status' => $msg]);
+        return back()->with('status', $msg);
     }
 
     /**
@@ -149,6 +199,7 @@ class QueueController extends Controller
     public function recallQueue(Queue $queue)
     {
         if ($queue->status !== 'skipped') {
+            if (request()->ajax()) return response()->json(['error' => 'Hanya antrian yang terlewati yang dapat dipanggil ulang.'], 422);
             return back()->with('error', 'Hanya antrian yang terlewati yang dapat dipanggil ulang.');
         }
 
@@ -158,6 +209,7 @@ class QueueController extends Controller
             ->exists();
 
         if ($hasActive) {
+            if (request()->ajax()) return response()->json(['error' => 'Selesaikan antrian aktif terlebih dahulu.'], 422);
             return back()->with('error', 'Selesaikan antrian aktif terlebih dahulu.');
         }
 
@@ -166,7 +218,9 @@ class QueueController extends Controller
         // Broadcast event
         event(new PanggilAntrian($queue->nomor_antrian, auth()->user()->counter?->name ?? 'Loket'));
 
-        return back()->with('status', 'Memanggil ulang nomor ' . $queue->nomor_antrian);
+        $msg = 'Memanggil ulang nomor ' . $queue->nomor_antrian;
+        if (request()->ajax()) return response()->json(['status' => $msg]);
+        return back()->with('status', $msg);
     }
 
     /**
