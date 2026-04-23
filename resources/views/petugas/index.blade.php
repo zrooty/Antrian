@@ -27,21 +27,64 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Main Control Panel -->
-                <div class="lg:col-span-2 space-y-8">
-                    @include('petugas.partials.active-queue')
-                    @include('petugas.partials.waiting-list')
-                </div>
-
-                <!-- Sidebar: Skipped/History -->
-                <div class="space-y-8">
-                    @include('petugas.partials.skipped-list')
-                    @include('petugas.partials.handled-list')
-                </div>
+            <div class="flex justify-end mb-4">
+                <div class="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-full shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span>Terakhir diperbarui: <span id="last-update-time">{{ now()->format('H:i:s') }}</span></span>
                 </div>
             </div>
 
+            <div id="petugas-dashboard-container">
+                @include('petugas.partials.dashboard-content')
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const container = document.getElementById('petugas-dashboard-container');
+                    const timeElement = document.getElementById('last-update-time');
+                    
+                    function fetchDashboardData() {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const page = urlParams.get('page') || 1;
+
+                        fetch(`{{ route('petugas.data') }}?page=${page}`)
+                            .then(response => response.text())
+                            .then(html => {
+                                if (html.trim().length > 0) {
+                                    container.innerHTML = html;
+                                    
+                                    // Update timestamp
+                                    const now = new Date();
+                                    const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
+                                                   now.getMinutes().toString().padStart(2, '0') + ':' + 
+                                                   now.getSeconds().toString().padStart(2, '0');
+                                    timeElement.innerText = timeStr;
+                                }
+                            })
+                            .catch(error => console.error("Update failed:", error));
+                    }
+
+                    // Polling setiap 5 detik
+                    setInterval(fetchDashboardData, 5000);
+
+                    // Intercept pagination clicks
+                    document.addEventListener('click', function(e) {
+                        const link = e.target.closest('#waiting-pagination-container a');
+                        if (link) {
+                            e.preventDefault();
+                            const url = new URL(link.href);
+                            const page = url.searchParams.get('page');
+                            
+                            // Update URL without reload
+                            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?page=' + page;
+                            window.history.pushState({path:newUrl},'',newUrl);
+                            
+                            // Fetch immediately
+                            fetchDashboardData();
+                        }
+                    });
+                });
+            </script>
         </div>
     </div>
 </x-app-layout>

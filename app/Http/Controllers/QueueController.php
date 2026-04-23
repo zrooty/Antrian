@@ -21,21 +21,39 @@ class QueueController extends Controller
             return redirect('/')->with('error', 'Anda belum ditugaskan ke loket manapun. Silakan hubungi Admin.');
         }
 
+        $data = $this->getDashboardData($user);
+        $data['counter'] = $user->counter;
+
+        return view('petugas.index', $data);
+    }
+
+    /**
+     * Get updated dashboard content for AJAX.
+     */
+    public function getPetugasData()
+    {
+        $user = auth()->user();
+        $data = $this->getDashboardData($user);
+        
+        return view('petugas.partials.dashboard-content', $data);
+    }
+
+    /**
+     * Common data fetching logic for officer dashboard.
+     */
+    private function getDashboardData($user)
+    {
         $today = Carbon::today()->toDateString();
         $schedule = Schedule::where('tanggal', $today)->first();
 
         if (!$schedule) {
-            return view('petugas.index', [
+            return [
                 'waitingQueues' => collect([]),
                 'activeQueue' => null,
                 'skippedQueues' => collect([]),
                 'handledQueues' => collect([]),
-                'counter' => $user->counter
-            ]);
+            ];
         }
-
-        // Get queues for today
-        $queues = Queue::where('schedule_id', $schedule->id)->get();
 
         // Active queue for this specific counter
         $activeQueue = Queue::where('schedule_id', $schedule->id)
@@ -44,6 +62,19 @@ class QueueController extends Controller
             ->latest('updated_at')
             ->first();
 
+        // Waiting queues with pagination
+        $waitingQueues = Queue::where('schedule_id', $schedule->id)
+            ->where('status', 'waiting')
+            ->orderBy('id', 'asc')
+            ->paginate(10);
+
+        // Skipped queues (typically small enough for today at one counter)
+        $skippedQueues = Queue::where('schedule_id', $schedule->id)
+            ->where('status', 'skipped')
+            ->where('counter_id', $user->counter_id)
+            ->latest('updated_at')
+            ->get();
+
         // Handled queues for today at this counter
         $handledQueues = Queue::where('schedule_id', $schedule->id)
             ->where('counter_id', $user->counter_id)
@@ -51,13 +82,12 @@ class QueueController extends Controller
             ->latest('updated_at')
             ->get();
 
-        return view('petugas.index', [
-            'waitingQueues' => $queues->where('status', 'waiting')->sortBy('id'),
+        return [
+            'waitingQueues' => $waitingQueues,
             'activeQueue' => $activeQueue,
-            'skippedQueues' => $queues->where('status', 'skipped')->where('counter_id', $user->counter_id)->sortByDesc('updated_at'),
+            'skippedQueues' => $skippedQueues,
             'handledQueues' => $handledQueues,
-            'counter' => $user->counter
-        ]);
+        ];
     }
 
     /**

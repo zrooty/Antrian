@@ -25,5 +25,10 @@
                 </div>
             @endforeach
         </div>
+
+        <!-- Pagination Links -->
+        <div id="waiting-pagination-container" class="mt-6">
+            {{ $waitingQueues->links() }}
+        </div>
     @endif
 </div>

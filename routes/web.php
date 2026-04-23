@@ -25,6 +25,7 @@ Route::middleware('auth')->group(function () {
     // Petugas (Officer) Logic
     Route::prefix('officer')->name('petugas.')->group(function () {
         Route::get('/', [QueueController::class, 'petugasIndex'])->name('index');
+        Route::get('/data', [QueueController::class, 'getPetugasData'])->name('data');
         Route::post('/call', [QueueController::class, 'panggil'])->name('panggil');
         Route::patch('/queue/{queue}/start', [QueueController::class, 'startProcessing'])->name('start');
         Route::patch('/queue/{queue}/finish', [QueueController::class, 'finishQueue'])->name('finish');
