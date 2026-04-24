@@ -12,7 +12,7 @@
                 <div class="flex flex-wrap justify-center gap-4">
                     @if($activeQueue->isCalled())
                         <!-- Tombol Panggil Ulang Suara -->
-                        <form action="{{ route('petugas.recall', $activeQueue->id) }}" method="POST">
+                        <form action="{{ route('api.officer.recall', $activeQueue->id) }}" method="POST">
                             @csrf
                             @method('PATCH')
                             <button type="submit" class="inline-flex items-center px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
@@ -22,7 +22,7 @@
                         </form>
 
                         <!-- Tombol Mulai Layanan -->
-                        <form action="{{ route('petugas.start', $activeQueue->id) }}" method="POST">
+                        <form action="{{ route('api.officer.start', $activeQueue->id) }}" method="POST">
                             @csrf
                             @method('PATCH')
                             <button type="submit" class="inline-flex items-center px-8 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 shadow-lg shadow-green-500/30 transition-all">
@@ -32,7 +32,7 @@
                         </form>
 
                         <!-- Tombol Lewati -->
-                        <form action="{{ route('petugas.skip', $activeQueue->id) }}" method="POST">
+                        <form action="{{ route('api.officer.skip', $activeQueue->id) }}" method="POST">
                             @csrf
                             @method('PATCH')
                             <button type="submit" class="inline-flex items-center px-8 py-3 bg-red-100 text-red-700 font-bold rounded-xl hover:bg-red-200 transition-all">
@@ -42,7 +42,7 @@
                         </form>
                     @elseif($activeQueue->isProcessing())
                         <!-- Tombol Selesai -->
-                        <form action="{{ route('petugas.finish', $activeQueue->id) }}" method="POST">
+                        <form action="{{ route('api.officer.finish', $activeQueue->id) }}" method="POST">
                             @csrf
                             @method('PATCH')
                             <button type="submit" class="inline-flex items-center px-10 py-4 bg-indigo-600 text-white text-lg font-black rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-500/40 transition-all transform hover:-translate-y-1">
@@ -60,7 +60,7 @@
                 </div>
                 <p class="text-xl text-gray-500 font-medium mb-8">Tidak ada antrian aktif saat ini.</p>
                 
-                <form action="{{ route('petugas.panggil') }}" method="POST">
+                <form action="{{ route('api.officer.call') }}" method="POST">
                     @csrf
                     <button type="submit" class="inline-flex items-center px-8 py-4 bg-blue-600 text-white text-lg font-black rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-500/30 transition-all transform hover:scale-105">
                         Panggil Antrian Selanjutnya

@@ -88,11 +88,11 @@
 
                 async fetchData() {
                     try {
-                        const response = await fetch('{{ route('admin.monitoring.data') }}');
+                        const response = await fetch('{{ route('api.admin.monitoring') }}');
                         if (!response.ok) throw new Error('Network response was not ok');
-                        const data = await response.json();
-                        this.counters = data.counters;
-                        this.waiting_queues = data.waiting_queues;
+                        const json = await response.json();
+                        this.counters = json.data.counters;
+                        this.waiting_queues = json.data.waiting_queues;
                         this.loading = false;
                     } catch (error) {
                         console.error("Failed to fetch monitoring data:", error);
