@@ -1,26 +1,20 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
-use App\Models\Schedule;
+use App\Http\Controllers\Controller;
 use App\Models\Queue;
+use App\Models\Schedule;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
-class DashboardController extends Controller
+class UserController extends Controller
 {
     /**
-     * Display the patient dashboard.
+     * Get current user's queue status.
      */
-    public function index()
+    public function status()
     {
-        $role = auth()->user()->role;
-        if ($role === 'admin') {
-            return redirect()->route('admin.rekap');
-        } elseif ($role === 'petugas') {
-            return redirect()->route('petugas.index');
-        }
-        
         $user = auth()->user();
         $today = Carbon::today()->toDateString();
         $schedule = Schedule::where('tanggal', $today)->first();
@@ -28,14 +22,14 @@ class DashboardController extends Controller
         $activeQueue = null;
         $position = 0;
         $estimasi = 0;
-        
+
         if ($schedule) {
             $activeQueue = Queue::where('user_id', $user->id)
                 ->where('schedule_id', $schedule->id)
                 ->whereNotIn('status', [Queue::STATUS_DONE])
-                ->with(['service', 'counter'])
+                ->with(['service', 'counter', 'schedule'])
                 ->first();
-            
+                
             if ($activeQueue && $activeQueue->status === Queue::STATUS_WAITING) {
                 $position = Queue::where('schedule_id', $schedule->id)
                     ->where('status', Queue::STATUS_WAITING)
@@ -45,21 +39,20 @@ class DashboardController extends Controller
             }
         }
         
-        $doneQueue = null;
-        if ($schedule && !$activeQueue) {
-            $doneQueue = Queue::where('user_id', $user->id)
-                ->where('schedule_id', $schedule->id)
-                ->where('status', Queue::STATUS_DONE)
-                ->with(['service', 'counter'])
-                ->latest()
-                ->first();
-        }
-
         $historyQueues = Queue::where('user_id', $user->id)
             ->with(['service', 'counter', 'schedule'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
         
-        return view('dashboard', compact('activeQueue', 'position', 'estimasi', 'doneQueue', 'historyQueues'));
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'activeQueue' => $activeQueue,
+                'position' => $position,
+                'estimasi' => $estimasi,
+                'historyQueues' => $historyQueues->items(),
+                'pagination' => (string) $historyQueues->links()
+            ]
+        ]);
     }
 }

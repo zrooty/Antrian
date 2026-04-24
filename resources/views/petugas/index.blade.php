@@ -80,11 +80,12 @@
                         if (showLoading) container.classList.add('fetching');
                         indicator.classList.replace('bg-green-500', 'bg-yellow-500');
 
-                        fetch(`{{ route('petugas.data') }}?page=${page}`, {
+                        fetch(`{{ route('api.officer.dashboard') }}?page=${page}`, {
                             headers: { 'X-Requested-With': 'XMLHttpRequest' }
                         })
                             .then(response => response.json())
-                            .then(data => {
+                            .then(json => {
+                                const data = json.data;
                                 // 1. Update Active Queue (Only if changed to avoid flicker)
                                 updateContainerIfChanged('active-queue-container', data.activeQueueHtml);
                                 

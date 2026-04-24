@@ -90,7 +90,7 @@
                 processing: true,
                 serverSide: true,
                 responsive: true,
-                ajax: "{{ route('admin.rekap.data') }}",
+                ajax: "{{ route('api.admin.stats') }}",
                 columns: [
                     { data: 'nomor_antrian', name: 'queues.nomor_antrian' },
                     { data: 'nama_pasien', name: 'users.name' },

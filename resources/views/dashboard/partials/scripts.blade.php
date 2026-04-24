@@ -12,9 +12,10 @@
             const urlParams = new URLSearchParams(window.location.search);
             const page = urlParams.get('page') || 1;
 
-            fetch(`{{ route('dashboard.api.status') }}?page=${page}`)
+            fetch(`{{ route('api.user.status') }}?page=${page}`)
                 .then(response => response.json())
-                .then(data => {
+                .then(json => {
+                    const data = json.data;
                     const q = data.activeQueue;
                     
                     // Logic Reload: Hanya reload jika terjadi perubahan state (Antrian muncul atau hilang)
@@ -28,8 +29,8 @@
 
                     if (!q) {
                         // Jika memang tidak ada antrian aktif, tetap update riwayat jika ada
-                        if (data.historyQueues && data.historyQueues.data) {
-                            updateHistoryTable(data.historyQueues.data);
+                        if (data.historyQueues) {
+                            updateHistoryTable(data.historyQueues);
                         }
                         if (data.pagination) {
                             const paginationContainer = document.getElementById('pagination-container');
@@ -53,8 +54,8 @@
                     updateDynamicContent(dynamicContent, q, data.position, data.estimasi);
 
                     // 4. Update History Table
-                    if (data.historyQueues && data.historyQueues.data) {
-                        updateHistoryTable(data.historyQueues.data);
+                    if (data.historyQueues) {
+                        updateHistoryTable(data.historyQueues);
                     }
 
                     // 5. Update Pagination Links
