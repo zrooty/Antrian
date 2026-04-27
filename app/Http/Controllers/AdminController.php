@@ -89,7 +89,24 @@ class AdminController extends Controller
      */
     public function updateSettings(Request $request)
     {
-        $settings = $request->except('_token');
+        // Daftar key settings yang diizinkan
+        $allowedKeys = [
+            'app_name',
+            'app_slogan',
+            'max_queue_per_day',
+            'queue_prefix_mode',
+        ];
+
+        // Validasi input
+        $request->validate([
+            'app_name'          => 'nullable|string|max:255',
+            'app_slogan'        => 'nullable|string|max:255',
+            'max_queue_per_day'  => 'nullable|integer|min:0',
+            'queue_prefix_mode'  => 'nullable|string|in:per_service,global',
+        ]);
+
+        // Hanya proses key yang ada di whitelist
+        $settings = $request->only($allowedKeys);
         
         foreach ($settings as $key => $value) {
             \App\Models\Setting::updateOrCreate(
@@ -107,4 +124,5 @@ class AdminController extends Controller
 
         return back()->with('success', 'Pengaturan berhasil diperbarui.');
     }
+
 }
