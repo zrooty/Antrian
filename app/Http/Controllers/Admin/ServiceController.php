@@ -36,6 +36,13 @@ class ServiceController extends Controller
         ]);
 
         Service::create($validated);
+        
+        // Log activity
+        \App\Models\ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'CREATE_SERVICE',
+            'description' => "Admin menambahkan layanan baru: {$validated['nama_layanan']} ({$validated['kode_prefix']}).",
+        ]);
 
         return redirect()->route('admin.services.index')->with('success', 'Layanan berhasil ditambahkan.');
     }
@@ -67,6 +74,13 @@ class ServiceController extends Controller
         ]);
 
         $service->update($validated);
+        
+        // Log activity
+        \App\Models\ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'UPDATE_SERVICE',
+            'description' => "Admin memperbarui layanan: {$service->nama_layanan} ({$service->kode_prefix}).",
+        ]);
 
         return redirect()->route('admin.services.index')->with('success', 'Layanan berhasil diperbarui.');
     }
@@ -76,7 +90,17 @@ class ServiceController extends Controller
      */
     public function destroy(Service $service)
     {
+        $serviceName = $service->nama_layanan;
+        $servicePrefix = $service->kode_prefix;
         $service->delete();
+
+        // Log activity
+        \App\Models\ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'DELETE_SERVICE',
+            'description' => "Admin menghapus layanan: {$serviceName} ({$servicePrefix}).",
+        ]);
+
         return redirect()->route('admin.services.index')->with('success', 'Layanan berhasil dihapus.');
     }
 }
