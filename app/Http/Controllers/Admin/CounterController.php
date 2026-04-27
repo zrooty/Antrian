@@ -37,6 +37,13 @@ class CounterController extends Controller
         ]);
 
         Counter::create($validated);
+        
+        // Log activity
+        \App\Models\ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'CREATE_COUNTER',
+            'description' => "Admin menambahkan loket baru: {$validated['name']} ({$validated['code']}).",
+        ]);
 
         return redirect()->route('admin.counters.index')->with('success', 'Loket berhasil ditambahkan.');
     }
@@ -69,6 +76,13 @@ class CounterController extends Controller
         ]);
 
         $counter->update($validated);
+        
+        // Log activity
+        \App\Models\ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'UPDATE_COUNTER',
+            'description' => "Admin memperbarui loket: {$counter->name} ({$counter->code}).",
+        ]);
 
         return redirect()->route('admin.counters.index')->with('success', 'Loket berhasil diperbarui.');
     }
@@ -78,7 +92,17 @@ class CounterController extends Controller
      */
     public function destroy(Counter $counter)
     {
+        $counterName = $counter->name;
+        $counterCode = $counter->code;
         $counter->delete();
+
+        // Log activity
+        \App\Models\ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'DELETE_COUNTER',
+            'description' => "Admin menghapus loket: {$counterName} ({$counterCode}).",
+        ]);
+
         return redirect()->route('admin.counters.index')->with('success', 'Loket berhasil dihapus.');
     }
 }

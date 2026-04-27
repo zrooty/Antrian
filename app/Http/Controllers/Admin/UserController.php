@@ -55,6 +55,13 @@ class UserController extends Controller
         }
 
         User::create($validated);
+        
+        // Log activity
+        \App\Models\ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'CREATE_USER',
+            'description' => "Admin menambahkan user baru: {$validated['name']} ({$validated['role']}).",
+        ]);
 
         return redirect()->route('admin.users.index')->with('success', 'User berhasil ditambahkan.');
     }
@@ -106,6 +113,13 @@ class UserController extends Controller
         }
 
         $user->update($validated);
+        
+        // Log activity
+        \App\Models\ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'UPDATE_USER',
+            'description' => "Admin memperbarui data user: {$user->name} ({$user->role}).",
+        ]);
 
         return redirect()->route('admin.users.index')->with('success', 'User berhasil diperbarui.');
     }
@@ -119,7 +133,17 @@ class UserController extends Controller
             return back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }
 
+        $userName = $user->name;
+        $userRole = $user->role;
         $user->delete();
+
+        // Log activity
+        \App\Models\ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'DELETE_USER',
+            'description' => "Admin menghapus user: {$userName} ({$userRole}).",
+        ]);
+
         return redirect()->route('admin.users.index')->with('success', 'User berhasil dihapus.');
     }
 }
