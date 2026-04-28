@@ -29,6 +29,7 @@
                     <tr>
                         <th scope="col" class="px-6 py-4">Nama</th>
                         <th scope="col" class="px-6 py-4">Email</th>
+                        <th scope="col" class="px-6 py-4">Telepon</th>
                         <th scope="col" class="px-6 py-4">Role</th>
                         <th scope="col" class="px-6 py-4 text-right">Aksi</th>
                     </tr>
@@ -48,6 +49,7 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4">{{ $user->email }}</td>
+                            <td class="px-6 py-4">{{ $user->phone ?? '-' }}</td>
                             <td class="px-6 py-4">
                                 @php
                                     $roleColor = match($user->role) {

@@ -26,6 +26,21 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'phone' => ['nullable', 'string', 'min:10', 'max:15', 'regex:/^[\+0-9\-]+$/'],
+        ];
+    }
+
+    /**
+     * Get the validation error messages.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'phone.min' => 'Nomor telepon minimal harus 10 karakter.',
+            'phone.max' => 'Nomor telepon maksimal 15 karakter.',
+            'phone.regex' => 'Format nomor telepon tidak valid. Gunakan hanya angka (atau karakter + dan -).',
         ];
     }
 }
