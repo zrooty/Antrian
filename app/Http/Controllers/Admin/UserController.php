@@ -42,6 +42,7 @@ class UserController extends Controller
                 'nullable',
                 'exists:counters,id,status,active'
             ],
+            'phone' => ['nullable', 'string', 'min:10', 'max:15', 'regex:/^[\+0-9\-]+$/'],
         ], [
             'counter_id.required_if' => 'Loket wajib dipilih jika role adalah petugas.',
             'counter_id.exists' => 'Loket yang dipilih tidak valid atau tidak aktif.',
@@ -97,6 +98,7 @@ class UserController extends Controller
                 'nullable',
                 'exists:counters,id,status,active'
             ],
+            'phone' => ['nullable', 'string', 'min:10', 'max:15', 'regex:/^[\+0-9\-]+$/'],
         ], [
             'counter_id.required_if' => 'Loket wajib dipilih jika role adalah petugas.',
             'counter_id.exists' => 'Loket yang dipilih tidak valid atau tidak aktif.',

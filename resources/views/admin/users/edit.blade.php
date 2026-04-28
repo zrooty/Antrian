@@ -21,6 +21,12 @@
             </div>
 
             <div class="mb-6">
+                <x-input-label for="phone" value="Nomor Telepon (Opsional)" />
+                <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $user->phone)" placeholder="Contoh: 081234567890" />
+                <x-input-error class="mt-2" :messages="$errors->get('phone')" />
+            </div>
+
+            <div class="mb-6">
                 <x-input-label for="role" value="Role Akses" />
                 <select id="role" name="role" onchange="toggleCounter()" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
                     <option value="pasien" {{ old('role', $user->role) === 'pasien' ? 'selected' : '' }}>Pasien</option>
